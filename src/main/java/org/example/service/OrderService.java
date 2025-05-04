@@ -2,51 +2,56 @@ package org.example.service;
 
 import org.example.model.Order;
 import org.example.model.Product;
+import org.example.repository.OrderRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class OrderService {
-    private final Map<Long, Order> orders = new HashMap<>();
-    private long nextId = 1;
 
-    public Order getOrder(Long id) {
-        return orders.get(id);
+    private final OrderRepository repository;
+
+    public OrderService(OrderRepository repository) {
+        this.repository = repository;
+    }
+
+    public Optional<Order> getOrder(Long id) {
+        return repository.findById(id);
     }
 
     public Order createOrder(Order order) {
-        order.setId(nextId++);
-        orders.put(order.getId(), order);
-        return order;
+        return repository.save(order);
     }
 
-    public Order updateOrder(Long id, Order updated) {
-        Order existing = orders.get(id);
-        if (existing != null) {
+    public Optional<Order> updateOrder(Long id, Order updated) {
+        return repository.findById(id).map(existing -> {
             existing.setCustomer(updated.getCustomer());
             existing.setProducts(updated.getProducts());
-        }
-        return existing;
+            return repository.save(existing);
+        });
     }
 
-    public Order addProduct(Long orderId, Product product) {
-        Order order = orders.get(orderId);
-        if (order != null) {
+    public Optional<Order> addProduct(Long orderId, Product product) {
+        return repository.findById(orderId).map(order -> {
             order.getProducts().add(product);
-        }
-        return order;
+            return repository.save(order);
+        });
     }
 
-    public Order removeProduct(Long orderId, Long productId) {
-        Order order = orders.get(orderId);
-        if (order != null) {
+    public Optional<Order> removeProduct(Long orderId, Long productId) {
+        return repository.findById(orderId).map(order -> {
             order.getProducts().removeIf(p -> p.getId().equals(productId));
-        }
-        return order;
+            return repository.save(order);
+        });
     }
 
-    public Order deleteOrder(Long id) {
-        return orders.remove(id);
+    public void deleteOrder(Long id) {
+        repository.deleteById(id);
+    }
+
+    public List<Order> getAll() {
+        return repository.findAll();
     }
 }
