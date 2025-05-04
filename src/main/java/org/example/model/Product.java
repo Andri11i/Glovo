@@ -1,12 +1,19 @@
 package org.example.model;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "products")
 public class Product {
+
+    @Id
     private Long id;
+
     private String name;
+
     private int quantity;
 
-    public Product() {
-    }
+    public Product() {}
 
     public Product(Long id, String name, int quantity) {
         this.id = id;
